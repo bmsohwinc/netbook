@@ -24,4 +24,57 @@
 		- WiFi is IEEE 802.11
 	- MAN - Cable TV networks
 
-till pg 23
+- Subnet = Router (or Switch) + Transmission lines
+	- integral to WAN
+
+- **Routing** and **Forwarding** algorithms help transmit packets from one router to another
+
+- connecting LAN and WAN creates internetwork
+	- connect via **Gateway**
+
+### Network software
+- protocol hierarchies
+	- each layer is like a VM
+	- each layer hides how it and lower layers work when communicating with higher layers and vice versa
+
+- protocols are predetermined between Layer-N peers
+
+- problems and solutions in layered network structure
+	- message is very huge -> chunk it into packets
+	- packets don't arrive in order -> use numbering
+	- oversubscribed network (congestion) -> use congestion control algorithms
+	- one sender is swamping a slow receiver -> apply backpressure and flow control with receiver acks
+	- bits in packet is altered/lost -> use error correction codes
+	- spoofing -> use encryption
+	- limited bandwidth to share -> use statistical multiplexing and dynamically allot transmission bandwidth
+
+- connection-oriented
+	- setup a connection negotiation to exchange 
+	- byte stream for real-time or continuous data
+	- message sequence for discrete data
+
+- connection-less
+	- similar to fire and forget (unreliable datagram)
+	- could have acks and replies (db calls)
+
+- example service calls in connection-oriented network
+	- LISTEN - server listens for connections
+	- CONNECT - client sends connection request
+	- ACCEPT - server accepts request
+	- RECEIVE - server waits for messages
+	- SEND - client sends messages
+	- DISCONNECT - client requests end of connection
+
+- example service calls in connection-less network
+	- RECEIVE - server waits for messages
+	- SEND - client sends messages
+
+- service v/s protocols
+	- service is b/w layer n and layer n + 1
+		- abstract view of what to do
+	- protocol is b/w peer layers
+		- the how to do of the service
+
+
+
+till pg 85
