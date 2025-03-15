@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <asm-generic/socket.h>
+#include <sys/select.h>
 
 #define BUFFER_SIZE 1024
 #define MAX_CLIENTS 20
@@ -53,50 +54,66 @@ int main(int argc, char const* argv[])
     }
 
 
+    fd_set curr_sockets, ready_sockets;
+    FD_ZERO(&curr_sockets);
+    FD_SET(sfd1, &curr_sockets);
+
+
+
+
+    
+
     int client_idx = 0;
 
     int clients[MAX_CLIENTS] = { 0 };
 
     while (client_idx < MAX_CLIENTS) {
-        if ((new_socket
-            = accept(sfd1, (struct sockaddr*)&address,
-                    &addrlen))
-            < 0) {
-            perror("accept");
+
+        ready_sockets = curr_sockets;
+
+        if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0) {
+            perror("select");
             exit(EXIT_FAILURE);
         }
 
-        clients[client_idx] = new_socket;
-        client_idx++;
-
-        int pid = fork();
-
-        if (pid < 0) {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
-
-        if (pid == 0) {
-
-            printf("Child speaks... I am %d. My parent is: %d\n", getpid(), getppid());
-
-            // welcome message
-            send(new_socket, hello, strlen(hello), 0);
+        for (int i = 0; i < FD_SETSIZE; i++) {
+            if (FD_ISSET(i, &ready_sockets)) {
+                if (i == sfd1) {
+                    if ((new_socket
+                        = accept(sfd1, (struct sockaddr*)&address,
+                                &addrlen))
+                        < 0) {
+                        perror("accept");
+                        exit(EXIT_FAILURE);
+                    }
             
-            while (1) {
-                
-                memset(buffer, 0, BUFFER_SIZE);
-                valread = read(new_socket, buffer, 1024 - 1); 
+                    clients[client_idx] = new_socket;
+                    client_idx++;
 
-                printf("Client %d: %s\n", client_idx, buffer);
+                    printf("New connection, socket fd is %d, index %d\n", new_socket, client_idx);
+            
+                    FD_SET(new_socket, &curr_sockets);
 
-                if (strcmp(buffer, "exit") == 0) {
-                    close(new_socket);
-                    break;
+                    send(new_socket, hello, strlen(hello), 0);
+            
+                    
+                } else {
+                    char buffer[1024] = { 0 };
+                    memset(buffer, 0, BUFFER_SIZE);
+                    valread = read(i, buffer, 1024 - 1); 
+
+                    printf("Client %d: %s\n", i, buffer);
+
+                    if (strcmp(buffer, "exit") == 0) {
+                        close(i);
+                        break;
+                    }
+
+                    sleep(5); // shows that this blocks until server finishes client request
+
+                    send(i, buffer, strlen(buffer), 0);
+
                 }
-
-                send(new_socket, buffer, strlen(buffer), 0);
-
             }
         }
     }
