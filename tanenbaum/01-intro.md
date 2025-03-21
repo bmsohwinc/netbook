@@ -75,6 +75,40 @@
 	- protocol is b/w peer layers
 		- the how to do of the service
 
+- OSI model
+	- Physical
+		- sends bits, ensures the same bit is received at other side
+	- Data link
+		- sends frames - groups of thousands of bytes
+	- Network
+		- routing frames/packets
+		- handling congestion and heterogenous networks/protocols
+	- Transport
+		- fragment packets, provide end-to-end channel for transmission
+		- directly interacts with src and dest
+			- L1, L2, L3 only interact with neighboring layers
+	- Session
+		- track current transmiteer, prevent race conditions
+	- Presentation
+		- allows common data structure to be used for communication
+	- Application
+		- user protocols like HTTP, FTP, SMTP
+
+- TCP/IP model
+	- Link
+		- this layer is connectionless
+		- interface b/w trx lines and packets/hosts
+	- Internet
+		- heart of the architecture
+		- allows hosts to send/receive packets independently
+		- doesn't worry about ordering
+	- Transport
+		- splits packets into messages, orders them
+		- can implement flow control to handle traffic
+		- UDP is used for prompt delivery than an accurate delivery
+	- Application
+		- HTTP, DNS, RTP, etc. 
+
 
 
 till pg 85
