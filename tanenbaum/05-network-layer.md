@@ -50,6 +50,27 @@
 - routing algorithms should be: correct, stable (finish in time), fair and efficient (minimize packet travel length and maximize network bandwidth utilization), and robust (continue working even if some node is down)
 - best case is to transmit from a node B is along the sink tree rooted at B (min spanning tree)
 
+- non-adaptive are static. won't change. example: router to laptop at home
+- adaptive: change routing rules based on metrics (hops, traffic, health)
+
+- Edge weight is a weighted average of:
+	- physical distance in kms
+	- number of hops
+	- bandwidth
+	- average packet transfer delay
+- Dijkstra is used for shortest path computation
+
+- Flooding is one way which guarantees shortes path, is robust, but have
+	- packets duplicated
+	- infinite retransmissions
+- it can be avoided by setting a counter `k`  on each packet that represents network diameter
+- another way is to maintain seen packet numbers at each routers limited to k
+
+- distance vector routing helps routers estimate distance to all routers by sharing the relative distances with their neighbors
+	- but this is susceptible to **Count to Infinity** problem
+		- if a node receives a data from a neighbor who based it on the same node but that node doesn't know that the data was based on itself
+
+
 
 ## Congestion Control Algorithms
 
@@ -63,6 +84,6 @@
 
 
 
-Till Pg 365
+Till Pg 375
 
 
