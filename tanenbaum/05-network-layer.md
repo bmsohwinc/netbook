@@ -70,6 +70,20 @@
 	- but this is susceptible to **Count to Infinity** problem
 		- if a node receives a data from a neighbor who based it on the same node but that node doesn't know that the data was based on itself
 
+- link state routing also uses **flooding**, but uses _sequence number_ and _age_ fields to prevent count to infinity
+	- this is the popular and deployed algorithm
+
+- hierarchical routing helps reduce routing table size for faster routing
+	- zones, regions, clusters allow effective grouping
+	- but increases number of hops for communication
+
+- **broadcast**ing effectively requires spanning tree derivation
+	- packet coming from spanning tree edge is flooded
+	- coming from any other edge/link is discarded
+
+- multicast can be done by creating virtual groups that request data
+
+- anycast is used in DNS. no specific node is needed -- any node can provide the data if they have it
 
 
 ## Congestion Control Algorithms
@@ -84,6 +98,6 @@
 
 
 
-Till Pg 375
+Till Pg 385
 
 
