@@ -82,11 +82,27 @@
 	- coming from any other edge/link is discarded
 
 - multicast can be done by creating virtual groups that request data
+	- a spanning tree with a core node optimizes multicast
+	- needs more reading about deciding the core (it's usually the sender) and protocols (DVMRP, MOSPF)
 
 - anycast is used in DNS. no specific node is needed -- any node can provide the data if they have it
 
+- Mobile routing requires every host to have a **home** address.
+	- Mobile hosts keep acquiring new addresses, but home address is invariable. This is a **home agent**
+	- Senders send to home address, which forwards to mobile host. This is called **tunneling**
+	- Security is important, and needs more study
+
+- ad hoc networks routing
+	- varying topology means routing table generated on-demand
+	- nodes withing coverage circle form connections
+	- sender sends ROUTE_RQUEST packet to destination. destination sends ROUTE_REPLY packet
+	- packets include seq num and age/ttl to prevent count to infinity
+	- routes are updated periodically via hello packets broadcast
 
 ## Congestion Control Algorithms
+- too many packets in a part of the network
+- network throughput plummets due to blocked packets
+- 
 
 ## Quality of Service
 
@@ -98,6 +114,6 @@
 
 
 
-Till Pg 385
+Till Pg 395
 
 
