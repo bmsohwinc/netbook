@@ -39,7 +39,7 @@
 
 - Datagram v/s VC networks
 	- table size	
-	- lookup v/s setup
+	- lookup table v/s setup conxn
 	- free route v/s vulnerable path
 	- bulky packets v/s light references
 	
