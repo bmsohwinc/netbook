@@ -37,12 +37,14 @@ class SimpleClientProtocol(QuicConnectionProtocol):
         self._response_received.clear()
 
 
+remote_addr = ("localhost", 4433)
 async def main() -> None:
     """
     Main function to set up and run the QUIC client.
     """
     host = "localhost"
     port = 4433
+    aio_loop = asyncio.get_running_loop()
     
     logging.info(f"Connecting to QUIC server at {host}:{port}")
 
@@ -70,14 +72,23 @@ async def main() -> None:
     ) as client:
         print("\nConnected! Type a message and press Enter.")
         print("Type 'x' to exit.\n")
+
+        user_msgs = ["hi", "m", "hello", "x"]
         
-        while True:
-            # Get user input asynchronously to avoid blocking
-            try:
-                print("Enter something: ")
-                user_message = input("You: ")
-            except (EOFError, KeyboardInterrupt):
-                user_message = 'x'
+        for user_message in user_msgs:
+            if user_message == 'm':
+                try:
+                    # Migrate
+                    logging.info("Starting migration")
+                    client._transport.close()
+                    logging.info("Closed transport")
+                    new_transport, _ = await aio_loop.create_datagram_endpoint(lambda: client, local_addr=("::", 0))#, remote_addr=remote_addr)
+                    logging.info("Created datagram")
+                    # client._transport = new_transport
+                    logging.info("Completed migration?")
+                except Exception as e:
+                    logging.info(f"Migration failed: {e}")
+                continue
 
             if user_message == 'x':
                 print("\nOK, exiting chat.")
@@ -85,16 +96,23 @@ async def main() -> None:
 
             # 1. Get a NEW stream ID for each message
             stream_id = client._quic.get_next_available_stream_id()
+            logging.info(f"Got the next id: {stream_id}")
             
             # 2. Send the message, ending the stream for this transaction
             quic_payload = user_message.encode()
-            client._quic.send_stream_data(stream_id, quic_payload, end_stream=True)
-        
-            # 3. Wait for the server's echo response
-            await client.wait_for_response()
+
+            try:
+                logging.info("Sending data now...")
+                client._quic.send_stream_data(stream_id, quic_payload, end_stream=True)
+                # 3. Wait for the server's echo response
+                await client.wait_for_response()
+            except Exception as e:
+                print(e)
         
             # 4. CRITICAL: Reset the event for the next message
             client.reset()
+
+            await asyncio.sleep(2)
         
         logging.info("Chat finished. Closing connection.")
         client.close()
