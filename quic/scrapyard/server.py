@@ -16,20 +16,19 @@ logging.basicConfig(
 class SimpleServerProtocol(QuicConnectionProtocol):
     """
     This protocol handles incoming QUIC events.
-    When it receives data on a stream, it replies with a message.
+    When it receives data on a stream, it simply echoes it back.
     """
     def quic_event_received(self, event: QuicEvent) -> None:
+        logging.info(f">>> Something came: {event}")
+
         if isinstance(event, StreamDataReceived):
             # Data has been received from the client
-            request_data = event.data.decode()
-            logging.info(f"Received from client: '{request_data}' on stream {event.stream_id}")
+            request_data = event.data
+            logging.info(f"Received from client: '{request_data.decode()}' on stream {event.stream_id}")
 
-            # Prepare the response
-            response_data = f"Hi client, I received your message: '{request_data}'".encode()
-            
-            # Send the response back on the same stream
-            logging.info(f"Sending response to client on stream {event.stream_id}")
-            self._quic.send_stream_data(event.stream_id, response_data, end_stream=True)
+            # Echo the data back to the client on the same stream
+            logging.info(f"Echoing back to client on stream {event.stream_id}")
+            self._quic.send_stream_data(event.stream_id, request_data, end_stream=True)
 
 
 async def main() -> None:
@@ -39,7 +38,7 @@ async def main() -> None:
     host = "localhost"
     port = 4433
     
-    logging.info(f"Starting QUIC server on {host}:{port}")
+    logging.info(f"Starting QUIC echo server on {host}:{port}")
 
     # Create a QUIC configuration
     configuration = QuicConfiguration(
@@ -80,3 +79,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
+

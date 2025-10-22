@@ -25,12 +25,16 @@ class SimpleClientProtocol(QuicConnectionProtocol):
         if isinstance(event, StreamDataReceived):
             # Data has been received from the server
             response_data = event.data.decode()
-            logging.info(f"Received from server: '{response_data}'")
+            print(f"Server says: {response_data}")
             self._response_received.set()
 
     async def wait_for_response(self):
         """Wait until the response received event is set."""
         await self._response_received.wait()
+
+    def reset(self):
+        """Resets the event to allow waiting for the next message."""
+        self._response_received.clear()
 
 
 async def main() -> None:
@@ -53,7 +57,7 @@ async def main() -> None:
         configuration.load_verify_locations("cert.pem")
         logging.info("Server certificate loaded for verification.")
     except FileNotFoundError:
-        logging.error("Error: 'cert.pem' not found.")
+        logging.error("Error: 'cert.pem' or 'key.pem' not found.")
         logging.error("Please generate it using the openssl command in README.md")
         return
 
@@ -64,21 +68,36 @@ async def main() -> None:
         configuration=configuration,
         create_protocol=SimpleClientProtocol,
     ) as client:
-        # `client` is an instance of SimpleClientProtocol
+        print("\nConnected! Type a message and press Enter.")
+        print("Type 'x' to exit.\n")
         
-        # Get the next available stream ID to send data
-        stream_id = client._quic.get_next_available_stream_id()
-        message = b"Hello, Server!"
+        while True:
+            # Get user input asynchronously to avoid blocking
+            try:
+                print("Enter something: ")
+                user_message = input("You: ")
+            except (EOFError, KeyboardInterrupt):
+                user_message = 'x'
+
+            if user_message == 'x':
+                print("\nOK, exiting chat.")
+                break
+
+            # 1. Get a NEW stream ID for each message
+            stream_id = client._quic.get_next_available_stream_id()
+            
+            # 2. Send the message, ending the stream for this transaction
+            quic_payload = user_message.encode()
+            client._quic.send_stream_data(stream_id, quic_payload, end_stream=True)
         
-        logging.info(f"Sending to server: '{message.decode()}' on stream {stream_id}")
+            # 3. Wait for the server's echo response
+            await client.wait_for_response()
         
-        # Send data to the server on the created stream
-        client._quic.send_stream_data(stream_id, message, end_stream=True)
+            # 4. CRITICAL: Reset the event for the next message
+            client.reset()
         
-        # Wait for the server's response
-        await client.wait_for_response()
-        
-        logging.info("Response received. Closing connection.")
+        logging.info("Chat finished. Closing connection.")
+        client.close()
 
 
 if __name__ == "__main__":
@@ -86,3 +105,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         logging.error(f"An error occurred: {e}")
+
